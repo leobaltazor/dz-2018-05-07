@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .my {
+            color: red;
+            font-size: 24px
+        }
+        .other {
+            color: rgb(98, 0, 255);
+            font-size: 20px
+        }
+        textarea {
+            width: 200px;
+            height: 50px;
+            resize: none
+        }
+        .message-container {
+
+        }
+    </style>
+
+</head>
+<body>
+    <h1>CHAT</h1>
+
+    <ul class="message-container"></ul>
+
+    <div class="chat-form">
+        <form id="main-form">
+            <textarea name="" id="msg" cols="30" rows="10"></textarea>
+            <br>
+            <button class="send-btn">send</button>
+        </form>
+    </div>
+
+</body>
+    <script>
+
+    var UID_KEY = (Math.random() * 1000000000000000).toString();
+    var btn = document.querySelector(".send-btn");
+    var msgField = document.getElementById("msg");
+    var contant = document.querySelector("ul.message-container");
+
+    function sendMessage(msg){
+        var xhr = new XMLHttpRequest();
+        xhr.open("post", "/message");
+        xhr.setRequestHeader("Content-type", "application/json")
+        xhr.onload = function (){
+            console.log(this.responseText);
+        }
+        var body = JSON.stringify({
+            message: msg,
+            key: UID_KEY
+        });
+        xhr.send(body);
+    }
+
+    btn.addEventListener("click", function(event){
+        event.preventDefault();
+        sendMessage(msgField.value);
+        msgField.value = "";
+    });
+
+    function getMessage(){
+        var xhr = new XMLHttpRequest();
+        xhr.open("get", "/message");
+        xhr.onload = function (){
+            var json = JSON.parse(this.responseText);
+            if(json.key === UID_KEY) {
+                generateHTML(json.message, "my"); 
+            } else {
+                generateHTML(json.message, "other"); 
+            }
+            getMessage();
+        }
+        xhr.send();
+    }
+    getMessage();
+
+    function generateHTML(message, cl){
+        var msg = document.createElement("li");
+        msg.innerHTML = message;
+        msg.classList.add(cl);
+        contant.appendChild(msg);
+    }
+
+    </script>
+</html>
